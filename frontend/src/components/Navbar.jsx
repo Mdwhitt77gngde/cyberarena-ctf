@@ -16,7 +16,7 @@ export default function Navbar() {
       pathname === path
         ? 'text-[var(--accent)]'
         : 'text-[var(--text)] hover:text-[var(--accent)]'
-    }`
+    }` 
 
   return (
     <nav className="w-full border-b border-[var(--border)] bg-[var(--bg)]">
@@ -31,6 +31,12 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           <Link to="/" className={linkClass('/')}>
             Home
+          </Link>
+          <Link to="/challenges" className={linkClass('/challenges')}>
+            Challenges
+          </Link>
+          <Link to="/leaderboard" className={linkClass('/leaderboard')}>
+            Leaderboard
           </Link>
 
           {isAuthenticated ? (
