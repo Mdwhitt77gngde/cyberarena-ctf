@@ -2,10 +2,10 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from backend.app.database import init_db
-from backend.app.routers.auth import router as auth_router
-from backend.app.routers.users import router as users_router
-from backend.routes.challenges import router as challenges_router
+from app.database import init_db
+from app.routers.auth import router as auth_router
+from app.routers.users import router as users_router
+from app.routers.challenges import router as challenges_router
 
 app = FastAPI(
     title="CyberArena CTF Platform",

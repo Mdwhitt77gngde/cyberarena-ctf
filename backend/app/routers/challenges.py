@@ -3,9 +3,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
-from backend.models import Challenge
-from backend.schemas import ChallengeCreate, ChallengeResponse, FlagSubmission
+from ..database import get_db
+from ..models import Challenge
+from ..schemas import ChallengeCreate, ChallengeResponse, FlagSubmission
 
 router = APIRouter()
 
@@ -16,6 +16,7 @@ def get_challenges(
     difficulty: str | None = None,
     db: Session = Depends(get_db),
 ):
+    """Get all challenges with optional filtering by category and difficulty."""
     query = db.query(Challenge)
     if category:
         query = query.filter(Challenge.category == category)
@@ -26,6 +27,7 @@ def get_challenges(
 
 @router.post("/", response_model=ChallengeResponse)
 def create_challenge(challenge: ChallengeCreate, db: Session = Depends(get_db)):
+    """Create a new challenge."""
     new_challenge = Challenge(**challenge.model_dump())
     db.add(new_challenge)
     db.commit()
@@ -35,6 +37,7 @@ def create_challenge(challenge: ChallengeCreate, db: Session = Depends(get_db)):
 
 @router.put("/{challenge_id}", response_model=ChallengeResponse)
 def update_challenge(challenge_id: int, challenge: ChallengeCreate, db: Session = Depends(get_db)):
+    """Update an existing challenge."""
     db_challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not db_challenge:
         raise HTTPException(status_code=404, detail="Challenge not found")
@@ -49,6 +52,7 @@ def update_challenge(challenge_id: int, challenge: ChallengeCreate, db: Session 
 
 @router.delete("/{challenge_id}")
 def delete_challenge(challenge_id: int, db: Session = Depends(get_db)):
+    """Delete a challenge."""
     db_challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not db_challenge:
         raise HTTPException(status_code=404, detail="Challenge not found")
@@ -60,6 +64,7 @@ def delete_challenge(challenge_id: int, db: Session = Depends(get_db)):
 
 @router.post("/{challenge_id}/submit")
 def submit_flag(challenge_id: int, submission: FlagSubmission, db: Session = Depends(get_db)):
+    """Submit a flag for a challenge."""
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not challenge:
         raise HTTPException(status_code=404, detail="Challenge not found")
