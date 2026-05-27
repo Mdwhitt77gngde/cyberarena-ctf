@@ -16,10 +16,19 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-# Dependency - gets database session for each request
+
 def get_db():
+    """Dependency - gets database session for each request."""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+def init_db() -> None:
+    """Create all database tables from the shared metadata."""
+    Base.metadata.create_all(bind=engine)
+
+
+__all__ = ["Base", "SessionLocal", "engine", "get_db", "init_db"]
