@@ -88,3 +88,6 @@ CSE 499 — Senior Project
 ## Favorite Quotes
 
 - **Jose Manuel Mendoza Torrico:** "The quieter you become, the more you are able to hear." — Kali Linux Proverb
+
+**Emmanuel Okyere:** "Two heads are better than one" - African Proverb
+
