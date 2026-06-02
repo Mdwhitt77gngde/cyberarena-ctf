@@ -47,6 +47,19 @@ class ChallengeCreate(BaseModel):
 
 
 class ChallengeResponse(BaseModel):
+    """Response schema for challenge endpoints - excludes flag."""
+    id: int
+    title: str
+    description: str
+    category: str
+    difficulty: str
+    points: int
+
+    model_config = {"from_attributes": True}
+
+
+class ChallengeDetailResponse(BaseModel):
+    """Detailed response schema for a single challenge - excludes flag."""
     id: int
     title: str
     description: str
@@ -70,5 +83,15 @@ class HintResponse(BaseModel):
     id: int
     content: str
     point_cost: int
+
+    model_config = {"from_attributes": True}
+
+
+class HintRequestResponse(BaseModel):
+    """Response when user requests a hint."""
+    success: bool
+    message: str
+    hint: HintResponse = None
+    remaining_points: int = None
 
     model_config = {"from_attributes": True}
