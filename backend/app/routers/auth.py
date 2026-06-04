@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import User
-from ..schemas import Token, UserMeResponse, UserRegister, UserResponse
+from ..schemas import Token, UserLogin, UserMeResponse, UserRegister, UserResponse
 from ..security import create_access_token, get_current_user, hash_password, verify_password
 
 router = APIRouter()
@@ -36,12 +35,12 @@ def register_user(user_data: UserRegister, db: Session = Depends(get_db)) -> Use
 
 @router.post("/login", response_model=Token)
 def login_user(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    credentials: UserLogin,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Authenticate a user and issue a JWT access token."""
-    user = db.query(User).filter(User.username == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    """Authenticate a user from a JSON body and issue a JWT access token."""
+    user = db.query(User).filter(User.username == credentials.username).first()
+    if not user or not verify_password(credentials.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
     if not user.is_active:

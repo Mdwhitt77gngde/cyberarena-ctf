@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import Challenge, User
+from ..models import Challenge, Submission, User
 from ..schemas import ChallengeCreate, ChallengeResponse, ChallengeDetailResponse, FlagSubmission
 from ..security import get_current_user, get_current_admin
 
@@ -124,6 +124,7 @@ def submit_flag(
     """
     Submit a flag for a challenge.
     Authenticated users only. Validates against stored flag.
+    Awards points on the first correct solve only.
     """
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not challenge:
@@ -133,8 +134,40 @@ def submit_flag(
         )
 
     is_correct = submission.flag.strip() == challenge.flag.strip()
+
+    # Has this user already solved this challenge correctly before?
+    already_solved = (
+        db.query(Submission)
+        .filter(
+            Submission.user_id == current_user.id,
+            Submission.challenge_id == challenge.id,
+            Submission.is_correct == True,  # noqa: E712
+        )
+        .first()
+        is not None
+    )
+
+    # Record every attempt so progress and scoring stay auditable.
+    db.add(
+        Submission(
+            user_id=current_user.id,
+            challenge_id=challenge.id,
+            is_correct=is_correct,
+        )
+    )
+
+    points_awarded = 0
+    # Award the challenge points only on the FIRST correct solve.
+    if is_correct and not already_solved:
+        current_user.score += challenge.points
+        points_awarded = challenge.points
+
+    db.commit()
+    db.refresh(current_user)
+
     return {
         "correct": is_correct,
         "message": "Correct flag!" if is_correct else "Wrong flag, try again.",
+        "points_awarded": points_awarded,
+        "total_score": current_user.score,
     }
-

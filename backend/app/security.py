@@ -4,7 +4,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+bearer_scheme = HTTPBearer()
 
 
 def hash_password(password: str) -> str:
@@ -52,11 +52,11 @@ def decode_access_token(token: str) -> Optional[str]:
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     """Resolve the authenticated user from the bearer token."""
-    username = decode_access_token(token)
+    username = decode_access_token(credentials.credentials)
     if username is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
