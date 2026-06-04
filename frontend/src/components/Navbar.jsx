@@ -16,11 +16,11 @@ export default function Navbar() {
       pathname === path
         ? 'text-[var(--accent)]'
         : 'text-[var(--text)] hover:text-[var(--accent)]'
-    }` 
+    }`
 
   return (
-    <nav className="w-full border-b border-[var(--border)] bg-[var(--bg)]">
-      <div className="flex items-center justify-between px-6 h-14">
+    <nav className="w-full  bg-[var(--code-bg)]">
+      <div className="flex items-center justify-between px-6 h-17">
         <Link
           to="/"
           className="text-base font-semibold tracking-tight text-[var(--text-h)] hover:text-[var(--accent)] transition-colors duration-150"
