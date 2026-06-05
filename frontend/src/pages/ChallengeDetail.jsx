@@ -1,20 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { challengeService } from '../services/challengeService'
 import { useAuth } from '../context/AuthContext'
-
-// Fake file systems per challenge id
-const FILE_SYSTEMS = {
-  default: {
-    files: {
-      'readme.txt': 'Welcome to the challenge.\nLook around carefully.',
-      '.hidden': 'Getting warmer...\nFlag: CTF{k33p_d1gg1ng}',
-      'notes.txt': 'Nothing useful here.',
-    },
-    visibleFiles: ['readme.txt', 'notes.txt'],
-    hiddenFiles: ['.hidden'],
-  },
-}
 
 export default function ChallengeDetail() {
   const { id } = useParams()
@@ -24,16 +11,7 @@ export default function ChallengeDetail() {
   const [loading, setLoading] = useState(true)
   const [flag, setFlag] = useState('')
   const [feedback, setFeedback] = useState(null)
-  const [termLines, setTermLines] = useState([
-    { text: 'CyberArena Challenge Environment v1.0', cls: 'text-[#4a6080]' },
-    { text: 'Type "help" for available commands.', cls: 'text-[#4a6080]' },
-    { text: '', cls: '' },
-  ])
   const [hints, setHints] = useState([])
-  const termInputRef = useRef(null)
-  const termBodyRef = useRef(null)
-
-  const fs = FILE_SYSTEMS[id] || FILE_SYSTEMS.default
 
   useEffect(() => {
     async function fetchChallenge() {
@@ -51,64 +29,6 @@ export default function ChallengeDetail() {
     }
     fetchChallenge()
   }, [id, navigate])
-
-  useEffect(() => {
-    if (termBodyRef.current) {
-      termBodyRef.current.scrollTop = termBodyRef.current.scrollHeight
-    }
-  }, [termLines])
-
-  function addLine(text, cls = 'text-[#8899aa]') {
-    setTermLines((prev) => [...prev, { text, cls }])
-  }
-
-  function processCommand(cmd) {
-    const c = cmd.trim().toLowerCase()
-    addLine(`guest@cyberarena:~$ ${cmd}`, 'text-[#4a9eff]')
-
-    if (c === 'help') {
-      addLine('Commands: ls, ls -la, cat <file>, whoami, pwd, clear', 'text-[#8899aa]')
-    } else if (c === 'whoami') {
-      addLine('guest', 'text-[#8899aa]')
-    } else if (c === 'pwd') {
-      addLine('/home/guest', 'text-[#8899aa]')
-    } else if (c === 'ls') {
-      addLine(fs.visibleFiles.join('  '), 'text-[#8899aa]')
-    } else if (c === 'ls -la' || c === 'ls -al') {
-      fs.visibleFiles.forEach((f) =>
-        addLine(`-rw-r--r-- guest  ${f}`, 'text-[#8899aa]')
-      )
-      fs.hiddenFiles.forEach((f) =>
-        addLine(`-rw------- guest  ${f}`, 'text-[#2ecc71]')
-      )
-    } else if (c.startsWith('cat ')) {
-      const fname = cmd.slice(4).trim()
-      if (fs.files[fname]) {
-        fs.files[fname]
-          .split('\n')
-          .forEach((line) =>
-            addLine(
-              line,
-              fname.startsWith('.') ? 'text-[#2ecc71]' : 'text-[#8899aa]'
-            )
-          )
-      } else {
-        addLine(`cat: ${fname}: No such file or directory`, 'text-[#e74c3c]')
-      }
-    } else if (c === 'clear') {
-      setTermLines([])
-    } else {
-      addLine(`bash: ${cmd}: command not found`, 'text-[#e74c3c]')
-    }
-  }
-
-  function handleTermKey(e) {
-    if (e.key !== 'Enter') return
-    const val = e.target.value.trim()
-    if (!val) return
-    processCommand(val)
-    e.target.value = ''
-  }
 
   async function handleSubmit() {
     if (!flag.trim()) return
@@ -252,32 +172,18 @@ export default function ChallengeDetail() {
               challenge-env — bash
             </span>
           </div>
-          <span className="text-xs text-[#4a6080]">⚡ CyberArena Terminal</span>
+          <span className="text-xs text-[#4a6080]">⚡ WebVM Terminal</span>
         </div>
 
-        {/* Terminal Body */}
-        <div
-          ref={termBodyRef}
-          className="flex-1 bg-[#060c14] p-4 overflow-y-auto font-mono text-xs leading-relaxed"
-          onClick={() => termInputRef.current?.focus()}
-        >
-          {termLines.map((line, i) => (
-            <div key={i} className={line.cls}>
-              {line.text}
-            </div>
-          ))}
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[#2ecc71] whitespace-nowrap">
-              guest@cyberarena:~$
-            </span>
-            <input
-              ref={termInputRef}
-              onKeyDown={handleTermKey}
-              className="bg-transparent border-none outline-none text-[#e0eaf8] font-mono text-xs flex-1 caret-[#4a9eff]"
-              placeholder="type a command..."
-              autoFocus
-            />
-          </div>
+        {/* WebVM iframe */}
+        <div className="flex-1 bg-[#060c14]">
+          <iframe
+            src="https://webvm.io/?pass=1"
+            className="w-full h-full border-0"
+            style={{ minHeight: '500px' }}
+            allow="cross-origin-isolated"
+            title="CyberArena Linux Terminal"
+          />
         </div>
       </div>
     </div>
