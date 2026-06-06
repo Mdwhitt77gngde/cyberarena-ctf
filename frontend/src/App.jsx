@@ -17,15 +17,13 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/challenges" element={<Challenges />} />
-            <Route path="/challenges/:id" element={<ChallengeDetail />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
+          <Route path="/challenges" element={<Challenges />} />
+          <Route path="/challenges/:id" element={<ChallengeDetail />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
         </Routes>
         <Footer />
       </BrowserRouter>
