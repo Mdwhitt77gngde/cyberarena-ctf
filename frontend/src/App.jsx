@@ -21,9 +21,14 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/challenges" element={<Challenges />} />
-          <Route path="/challenges/:id" element={<ChallengeDetail />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/challenges" element={<Challenges />} />
+            <Route path="/challenges/:id" element={<ChallengeDetail />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
         </Routes>
         <Footer />
       </BrowserRouter>
