@@ -105,8 +105,8 @@ export default function ChallengeDetail() {
                     <p className="text-xs text-[#8899aa]">{hint.content}</p>
                   ) : (
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-[#4a6080]">
-                        🔒 Hint {i + 1}
+                      <span className="text-xs text-[#4a6080] font-mono">
+                        Hint {i + 1}
                       </span>
                       <button
                         onClick={() => revealHint(i)}
@@ -172,7 +172,7 @@ export default function ChallengeDetail() {
               challenge-env — bash
             </span>
           </div>
-          <span className="text-xs text-[#4a6080]">⚡ WebVM Terminal</span>
+          <span className="text-xs text-[#4a6080] font-mono">WebVM Terminal</span>
         </div>
 
         {/* WebVM iframe */}
