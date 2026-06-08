@@ -69,27 +69,30 @@ export default function Register() {
   }
 
   const inputClass = (field) =>
-    `w-full px-3 py-2 text-sm rounded border bg-[var(--code-bg)] text-[var(--text-h)] outline-none transition-colors duration-150
-    focus:border-[var(--accent)] placeholder:text-[var(--text)]
-    ${errors[field] ? 'border-red-400' : 'border-[var(--border)]'}`
+    `w-full px-3 py-2.5 text-sm rounded-md border bg-[#060c14] text-[#e0eaf8] outline-none transition-colors duration-200
+    focus:border-[#4a9eff] placeholder:text-[#2e3f58]
+    ${errors[field] ? 'border-red-500/60' : 'border-[#1e2d47]'}`
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-10">
+    <main className="flex flex-1 items-center justify-center px-4 py-10 bg-[#080d16]">
       <div className="w-full max-w-sm">
-        <div className="border border-[var(--border)] rounded-lg p-8 bg-[var(--bg)]">
-          <h2 className="text-[var(--text-h)] text-xl font-medium tracking-tight mb-6">
+        <div className="border border-[#1e2d47] rounded-xl p-8 bg-[#0d1321]">
+          <h2 className="text-[#e0eaf8] text-xl font-semibold tracking-tight mb-1">
             Create account
           </h2>
+          <p className="text-sm text-[#4a6080] mb-7">
+            Join CyberArena and start competing
+          </p>
 
           {serverError && (
-            <p className="text-sm text-red-400 mb-4 p-3 rounded bg-red-400/10 border border-red-400/20">
+            <p className="text-sm text-red-400 mb-5 p-3 rounded-md bg-red-400/8 border border-red-500/25">
               {serverError}
             </p>
           )}
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-[var(--text)] uppercase tracking-wide">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#6b82a0] uppercase tracking-wider">
                 Username
               </label>
               <input
@@ -106,8 +109,8 @@ export default function Register() {
               )}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-[var(--text)] uppercase tracking-wide">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#6b82a0] uppercase tracking-wider">
                 Email
               </label>
               <input
@@ -124,8 +127,8 @@ export default function Register() {
               )}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-[var(--text)] uppercase tracking-wide">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#6b82a0] uppercase tracking-wider">
                 Password
               </label>
               <input
@@ -142,8 +145,8 @@ export default function Register() {
               )}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-[var(--text)] uppercase tracking-wide">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#6b82a0] uppercase tracking-wider">
                 Confirm password
               </label>
               <input
@@ -163,15 +166,15 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full py-2 text-sm font-medium rounded bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-1 w-full py-2.5 text-sm font-semibold rounded-md bg-[#4a9eff] text-[#080d16] hover:bg-[#5aaeff] transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
-          <p className="mt-5 text-sm text-center text-[var(--text)]">
+          <p className="mt-6 text-sm text-center text-[#4a6080]">
             Already have an account?{' '}
-            <Link to="/login" className="text-[var(--accent)] hover:underline">
+            <Link to="/login" className="text-[#4a9eff] hover:text-[#5aaeff] transition-colors duration-200">
               Sign in
             </Link>
           </p>
