@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import Challenge
-from ..schemas import ChallengeCreate, ChallengeResponse, FlagSubmission
+from ..models import Challenge, Submission, User
+from ..schemas import ChallengeCreate, ChallengeResponse, ChallengeDetailResponse, FlagSubmission
+from ..security import get_current_user, get_current_admin
 
 router = APIRouter()
 
@@ -14,9 +15,13 @@ router = APIRouter()
 def get_challenges(
     category: str | None = None,
     difficulty: str | None = None,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get all challenges with optional filtering by category and difficulty."""
+    """
+    Get all challenges with optional filtering by category and difficulty.
+    Authenticated users only. Flag is never exposed.
+    """
     query = db.query(Challenge)
     if category:
         query = query.filter(Challenge.category == category)
@@ -25,9 +30,35 @@ def get_challenges(
     return query.all()
 
 
-@router.post("/", response_model=ChallengeResponse)
-def create_challenge(challenge: ChallengeCreate, db: Session = Depends(get_db)):
-    """Create a new challenge."""
+@router.get("/{challenge_id}", response_model=ChallengeDetailResponse)
+def get_challenge(
+    challenge_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get a specific challenge by ID.
+    Authenticated users only. Flag is never exposed.
+    """
+    challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
+    if not challenge:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found",
+        )
+    return challenge
+
+
+@router.post("/", response_model=ChallengeResponse, status_code=status.HTTP_201_CREATED)
+def create_challenge(
+    challenge: ChallengeCreate,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Create a new challenge.
+    Admin-only. Requires valid admin JWT token.
+    """
     new_challenge = Challenge(**challenge.model_dump())
     db.add(new_challenge)
     db.commit()
@@ -36,11 +67,22 @@ def create_challenge(challenge: ChallengeCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{challenge_id}", response_model=ChallengeResponse)
-def update_challenge(challenge_id: int, challenge: ChallengeCreate, db: Session = Depends(get_db)):
-    """Update an existing challenge."""
+def update_challenge(
+    challenge_id: int,
+    challenge: ChallengeCreate,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Update an existing challenge.
+    Admin-only. Requires valid admin JWT token.
+    """
     db_challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not db_challenge:
-        raise HTTPException(status_code=404, detail="Challenge not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found",
+        )
 
     for key, value in challenge.model_dump().items():
         setattr(db_challenge, key, value)
@@ -50,24 +92,82 @@ def update_challenge(challenge_id: int, challenge: ChallengeCreate, db: Session 
     return db_challenge
 
 
-@router.delete("/{challenge_id}")
-def delete_challenge(challenge_id: int, db: Session = Depends(get_db)):
-    """Delete a challenge."""
+@router.delete("/{challenge_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_challenge(
+    challenge_id: int,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Delete a challenge.
+    Admin-only. Requires valid admin JWT token.
+    """
     db_challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not db_challenge:
-        raise HTTPException(status_code=404, detail="Challenge not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found",
+        )
 
     db.delete(db_challenge)
     db.commit()
-    return {"message": "Challenge deleted successfully"}
+    return None
 
 
 @router.post("/{challenge_id}/submit")
-def submit_flag(challenge_id: int, submission: FlagSubmission, db: Session = Depends(get_db)):
-    """Submit a flag for a challenge."""
+def submit_flag(
+    challenge_id: int,
+    submission: FlagSubmission,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Submit a flag for a challenge.
+    Authenticated users only. Validates against stored flag.
+    Awards points on the first correct solve only.
+    """
     challenge = db.query(Challenge).filter(Challenge.id == challenge_id).first()
     if not challenge:
-        raise HTTPException(status_code=404, detail="Challenge not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found",
+        )
 
     is_correct = submission.flag.strip() == challenge.flag.strip()
-    return {"correct": is_correct, "message": "Correct flag!" if is_correct else "Wrong flag, try again."}
+
+    # Has this user already solved this challenge correctly before?
+    already_solved = (
+        db.query(Submission)
+        .filter(
+            Submission.user_id == current_user.id,
+            Submission.challenge_id == challenge.id,
+            Submission.is_correct == True,  # noqa: E712
+        )
+        .first()
+        is not None
+    )
+
+    # Record every attempt so progress and scoring stay auditable.
+    db.add(
+        Submission(
+            user_id=current_user.id,
+            challenge_id=challenge.id,
+            is_correct=is_correct,
+        )
+    )
+
+    points_awarded = 0
+    # Award the challenge points only on the FIRST correct solve.
+    if is_correct and not already_solved:
+        current_user.score += challenge.points
+        points_awarded = challenge.points
+
+    db.commit()
+    db.refresh(current_user)
+
+    return {
+        "correct": is_correct,
+        "message": "Correct flag!" if is_correct else "Wrong flag, try again.",
+        "points_awarded": points_awarded,
+        "total_score": current_user.score,
+    }

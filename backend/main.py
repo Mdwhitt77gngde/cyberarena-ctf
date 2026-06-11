@@ -6,6 +6,7 @@ from app.database import init_db
 from app.routers.auth import router as auth_router
 from app.routers.users import router as users_router
 from app.routers.challenges import router as challenges_router
+from app.routers.hints import router as hints_router
 
 app = FastAPI(
     title="CyberArena CTF Platform",
@@ -44,3 +45,4 @@ async def health_check():
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(challenges_router, prefix="/challenges", tags=["Challenges"])
+app.include_router(hints_router, prefix="/hints", tags=["Hints"])
