@@ -11,7 +11,7 @@ export default function Leaderboard() {
     async function fetchLeaderboard() {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/users/leaderboard`
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/users/leaderboard`
         )
         const data = await response.json()
         if (!response.ok) throw new Error(data.detail || 'Failed to fetch leaderboard')

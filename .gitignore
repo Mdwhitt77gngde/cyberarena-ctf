@@ -224,7 +224,10 @@ __pycache__/
 .env
 node_modules/
 
-# pytcache 
+# pytcache
 __pycache__/
+
+# Local SQLite database files (generated at runtime, not part of source)
+*.db
 
 mis-notas/
