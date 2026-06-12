@@ -1,5 +1,17 @@
 const API_URL = import.meta.env.VITE_API_URL
 
+function getToken() {
+  return localStorage.getItem('token')
+}
+
+function authHeaders() {
+  const token = getToken()
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
 export const challengeService = {
   async getChallenges(category = null, difficulty = null) {
     let url = `${API_URL}/challenges/`
@@ -7,14 +19,16 @@ export const challengeService = {
     if (category) params.append('category', category)
     if (difficulty) params.append('difficulty', difficulty)
     if (params.toString()) url += `?${params.toString()}`
-    const response = await fetch(url)
+    const response = await fetch(url, { headers: authHeaders() })
     const data = await response.json()
     if (!response.ok) throw new Error(data.detail || 'Failed to fetch challenges')
     return data
   },
 
   async getChallengeById(id) {
-    const response = await fetch(`${API_URL}/challenges/${id}`)
+    const response = await fetch(`${API_URL}/challenges/${id}`, {
+      headers: authHeaders()
+    })
     const data = await response.json()
     if (!response.ok) throw new Error(data.detail || 'Challenge not found')
     return data
