@@ -26,12 +26,14 @@ export default function Register() {
     if (!fields.email.trim()) {
       e.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
-      e.email = 'Enter a valid email address'
+      e.email = 'Enter a valid email address (e.g. name@example.com)'
     }
     if (!fields.password) {
       e.password = 'Password is required'
     } else if (fields.password.length < 8) {
       e.password = 'Password must be at least 8 characters'
+    } else if (!/\d/.test(fields.password)) {
+      e.password = 'Password must include at least one number'
     }
     if (!fields.confirmPassword) {
       e.confirmPassword = 'Please confirm your password'
@@ -138,10 +140,14 @@ export default function Register() {
                 onChange={handleChange}
                 autoComplete="new-password"
                 className={inputClass('password')}
-                placeholder="min. 8 characters"
+                placeholder="min. 8 characters, incl. 1 number"
               />
-              {errors.password && (
+              {errors.password ? (
                 <span className="text-xs text-red-400">{errors.password}</span>
+              ) : (
+                <span className="text-xs text-[#4a6080]">
+                  Must be at least 8 characters and include a number
+                </span>
               )}
             </div>
 
