@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { challengeService } from '../services/challengeService'
 import { useAuth } from '../context/AuthContext'
 
+const TERMINAL_CATEGORIES = ['linux']
+
 export default function ChallengeDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -13,14 +15,16 @@ export default function ChallengeDetail() {
   const [feedback, setFeedback] = useState(null)
   const [hints, setHints] = useState([])
 
+  const useTerminal = challenge
+    ? TERMINAL_CATEGORIES.includes(challenge.category?.toLowerCase())
+    : false
+
   useEffect(() => {
     async function fetchChallenge() {
       try {
         const data = await challengeService.getChallengeById(id)
         setChallenge(data)
-        setHints(
-          (data.hints || []).map((h) => ({ ...h, revealed: false }))
-        )
+        setHints((data.hints || []).map((h) => ({ ...h, revealed: false })))
       } catch {
         navigate('/challenges')
       } finally {
@@ -81,7 +85,7 @@ export default function ChallengeDetail() {
               {challenge?.points} pts
             </span>
           </div>
-          <p className="text-xs text-[#8899aa] leading-relaxed">
+          <p className="text-xs text-[#8899aa] leading-relaxed whitespace-pre-line">
             {challenge?.description}
           </p>
           <div className="mt-3 p-3 bg-[#060c14] rounded-lg border border-[#1e2d47] font-mono text-xs text-[#4a9eff]">
@@ -105,8 +109,8 @@ export default function ChallengeDetail() {
                     <p className="text-xs text-[#8899aa]">{hint.content}</p>
                   ) : (
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-[#4a6080] font-mono">
-                        Hint {i + 1}
+                      <span className="text-xs text-[#4a6080]">
+                        🔒 Hint {i + 1}
                       </span>
                       <button
                         onClick={() => revealHint(i)}
@@ -158,33 +162,81 @@ export default function ChallengeDetail() {
         </div>
       </div>
 
-      {/* Terminal Panel */}
+      {/* Right Panel */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Terminal Header */}
-        <div className="flex items-center justify-between px-4 h-10 bg-[#0d1321] border-b border-[#1e2d47] flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#e74c3c]" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#f39c12]" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#2ecc71]" />
+        {useTerminal ? (
+          <>
+            {/* Terminal Header */}
+            <div className="flex items-center justify-between px-4 h-10 bg-[#0d1321] border-b border-[#1e2d47] flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#e74c3c]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#f39c12]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#2ecc71]" />
+                </div>
+                <span className="text-xs text-[#4a6080] ml-2">
+                  challenge-env — bash
+                </span>
+              </div>
+              <span className="text-xs text-[#4a6080]">⚡ WebVM Terminal</span>
             </div>
-            <span className="text-xs text-[#4a6080] ml-2">
-              challenge-env — bash
-            </span>
-          </div>
-          <span className="text-xs text-[#4a6080] font-mono">WebVM Terminal</span>
-        </div>
+            {/* WebVM iframe */}
+            <div className="flex-1 bg-[#060c14]">
+              <iframe
+                src="https://webvm.io/?pass=1"
+                className="w-full h-full border-0"
+                style={{ minHeight: '500px' }}
+                allow="cross-origin-isolated"
+                title="CyberArena Linux Terminal"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Puzzle Header */}
+            <div className="flex items-center justify-between px-4 h-10 bg-[#0d1321] border-b border-[#1e2d47] flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#4a6080]">🧩 Puzzle Challenge</span>
+              </div>
+              <span className="text-xs text-[#4a6080]">No terminal required</span>
+            </div>
+            {/* Puzzle Content */}
+            <div className="flex-1 bg-[#0a0f1a] p-8 flex flex-col gap-6 overflow-y-auto">
+              <div className="max-w-2xl">
+                <h3 className="text-lg font-medium text-[#e0eaf8] mb-2">
+                  Challenge Brief
+                </h3>
+                <p className="text-sm text-[#4a6080] leading-relaxed whitespace-pre-line">
+                  {challenge?.description}
+                </p>
+              </div>
 
-        {/* WebVM iframe */}
-        <div className="flex-1 bg-[#060c14]">
-          <iframe
-            src="https://webvm.io/?pass=1"
-            className="w-full h-full border-0"
-            style={{ minHeight: '500px' }}
-            allow="cross-origin-isolated"
-            title="CyberArena Linux Terminal"
-          />
-        </div>
+              <div className="max-w-2xl bg-[#0d1321] border border-[#1e2d47] rounded-xl p-6">
+                <h3 className="text-sm font-medium text-[#e0eaf8] mb-4">
+                  💡 How to solve this challenge
+                </h3>
+                <div className="flex flex-col gap-3 text-xs text-[#8899aa] leading-relaxed">
+                  <p>1. Read the challenge description carefully on the left panel.</p>
+                  <p>2. Use any tools you need — browser, online decoders, your own knowledge.</p>
+                  <p>3. Once you find the flag, enter it in the Submit Flag box on the left.</p>
+                  <p>4. All flags follow the format <span className="font-mono text-[#4a9eff]">CTF&#123;...&#125;</span></p>
+                </div>
+              </div>
+
+              <div className="max-w-2xl bg-[#0d1321] border border-[#1e2d47] rounded-xl p-6">
+                <h3 className="text-sm font-medium text-[#e0eaf8] mb-4">
+                  🔧 Useful Tools
+                </h3>
+                <div className="flex flex-col gap-2 text-xs text-[#8899aa]">
+                  <p>• <span className="text-[#4a9eff]">CyberChef</span> — gchq.github.io/CyberChef — decode Base64, ROT13, and more</p>
+                  <p>• <span className="text-[#4a9eff]">Browser DevTools</span> — Press F12 to inspect page source and HTML</p>
+                  <p>• <span className="text-[#4a9eff]">Base64 Decode</span> — base64decode.org</p>
+                  <p>• <span className="text-[#4a9eff]">ROT13</span> — rot13.com</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
