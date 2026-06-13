@@ -12,148 +12,109 @@ Run it from the `backend/` directory with:
     python -m scripts.seed
 """
 
-import os
-import sys
-
-# Allow running the file directly (python scripts/seed.py) by making the
-# `backend/` package root importable.
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from app.database import SessionLocal, init_db
 from app.models import Challenge, Hint
 
-
-# Each entry defines a challenge plus the hints that belong to it.
-SEED_CHALLENGES = [
-    # --- Category 1: Web ---
-    {
-        "title": "Inspect the Source",
-        "description": "The flag is hidden somewhere in the page's HTML source. Take a closer look.",
-        "category": "Web",
-        "difficulty": "Easy",
-        "points": 100,
-        "flag": "FLAG{view_source_is_your_friend}",
-        "hints": [
-            {"content": "Try pressing Ctrl+U to view the page source.", "point_cost": 10},
-            {"content": "Look for HTML comments that the developer forgot to remove.", "point_cost": 20},
-        ],
-    },
-    {
-        "title": "Cookie Monster",
-        "description": "Authentication is handled by a cookie. Can you become the admin?",
-        "category": "Web",
-        "difficulty": "Medium",
-        "points": 250,
-        "flag": "FLAG{cookies_should_never_be_trusted}",
-        "hints": [
-            {"content": "Open your browser dev tools and inspect the stored cookies.", "point_cost": 15},
-            {"content": "What happens if you change the 'role' cookie value to 'admin'?", "point_cost": 30},
-        ],
-    },
-    # --- Category 2: Crypto ---
-    {
-        "title": "Caesar's Secret",
-        "description": "An old message was encrypted by shifting each letter. Decrypt it.",
-        "category": "Crypto",
-        "difficulty": "Easy",
-        "points": 150,
-        "flag": "FLAG{rotation_thirteen_classic}",
-        "hints": [
-            {"content": "This is a substitution cipher with a fixed letter shift.", "point_cost": 10},
-            {"content": "Try a shift of 13 (ROT13).", "point_cost": 20},
-        ],
-    },
-    {
-        "title": "Base of Operations",
-        "description": "The flag has been encoded, not encrypted. Decode the given string.",
-        "category": "Crypto",
-        "difficulty": "Medium",
-        "points": 200,
-        "flag": "FLAG{base64_is_encoding_not_encryption}",
-        "hints": [
-            {"content": "The string ends with '=' padding characters.", "point_cost": 15},
-            {"content": "Try decoding it as Base64.", "point_cost": 25},
-        ],
-    },
-    # --- Category 3: Forensics ---
-    {
-        "title": "Hidden in Plain Sight",
-        "description": "A seemingly ordinary image file hides a secret message inside it.",
-        "category": "Forensics",
-        "difficulty": "Medium",
-        "points": 250,
-        "flag": "FLAG{steganography_reveals_all}",
-        "hints": [
-            {"content": "Inspect the file's metadata and embedded strings.", "point_cost": 15},
-            {"content": "Steganography tools can extract data hidden inside images.", "point_cost": 30},
-        ],
-    },
-    {
-        "title": "Packet Detective",
-        "description": "A network capture contains credentials sent in clear text. Find the flag.",
-        "category": "Forensics",
-        "difficulty": "Hard",
-        "points": 350,
-        "flag": "FLAG{always_use_https}",
-        "hints": [
-            {"content": "Open the capture file in a network analyzer like Wireshark.", "point_cost": 20},
-            {"content": "Filter for HTTP traffic and read the POST request bodies.", "point_cost": 40},
-        ],
-    },
-]
-
-
-def seed_database() -> None:
-    """Insert sample challenges and hints if they are not already present."""
-    # Make sure the tables exist before we try to write to them.
+def seed():
     init_db()
-
     db = SessionLocal()
-    created_challenges = 0
-    created_hints = 0
-    try:
-        for entry in SEED_CHALLENGES:
-            existing = (
-                db.query(Challenge)
-                .filter(Challenge.title == entry["title"])
-                .first()
-            )
-            if existing:
-                print(f"- Skipping existing challenge: {entry['title']}")
-                continue
 
-            challenge = Challenge(
-                title=entry["title"],
-                description=entry["description"],
-                category=entry["category"],
-                difficulty=entry["difficulty"],
-                points=entry["points"],
-                flag=entry["flag"],
-            )
-            db.add(challenge)
-            db.flush()  # assigns challenge.id without committing yet
+    # Clear existing challenges
+    db.query(Hint).delete()
+    db.query(Challenge).delete()
+    db.commit()
 
-            for hint in entry["hints"]:
-                db.add(
-                    Hint(
-                        challenge_id=challenge.id,
-                        content=hint["content"],
-                        point_cost=hint["point_cost"],
-                    )
-                )
-                created_hints += 1
+    challenges = [
+        # --- Linux challenges (require terminal) ---
+        {
+            "title": "Lost in the Files",
+            "description": "A developer left a secret note somewhere on this server before they quit. Nobody knows where it is. Your job is to find it. Start exploring the file system and see what you can dig up.",
+            "category": "linux",
+            "difficulty": "easy",
+            "points": 100,
+            "flag": "CTF{h1dd3n_f1l3s_4r3_3asy}",
+            "hints": [
+                {"content": "Not all files are visible by default in Linux. Some files are intentionally hidden.", "point_cost": 10},
+                {"content": "Try adding flags to your ls command to reveal hidden files.", "point_cost": 20},
+            ]
+        },
+        {
+            "title": "Permission Denied",
+            "description": "There is a sensitive file on this server called secret.txt but when you try to read it you get Permission Denied. The original file is locked down tight — but the sysadmin was careless and left a backup copy somewhere. Find the backup and read the flag.",
+            "category": "linux",
+            "difficulty": "medium",
+            "points": 200,
+            "flag": "CTF{p3rm1ss10ns_4r3_3v3ryth1ng}",
+            "hints": [
+                {"content": "Check file permissions carefully. Use ls -la to see who owns what.", "point_cost": 15},
+                {"content": "Sysadmins often put backup files in /tmp. Have a look around there.", "point_cost": 25},
+            ]
+        },
+        {
+            "title": "The Hidden Process",
+            "description": "A rogue process is running on this server. The attacker hid a flag inside the process environment variables before disappearing. You need to find the process and extract the flag from its environment.",
+            "category": "linux",
+            "difficulty": "hard",
+            "points": 300,
+            "flag": "CTF{pr0c3ss_3nv_s3cr3ts}",
+            "hints": [
+                {"content": "Start by listing all running processes on the system.", "point_cost": 20},
+                {"content": "Every running process has a folder in /proc. Environment variables are stored in a file called environ inside that folder.", "point_cost": 30},
+            ]
+        },
+        # --- Non-VM challenges (no terminal needed) ---
+        {
+            "title": "ROT13 Decoder",
+            "description": "A secret message was encoded using ROT13 — a simple substitution cipher that rotates each letter by 13 positions in the alphabet. Decode the following message to find the flag:\n\nEncoded: PGS{ebg_guvegrra_vf_sha}\n\nHint: ROT13 applied twice returns the original text. Submit the decoded flag.",
+            "category": "crypto",
+            "difficulty": "easy",
+            "points": 100,
+            "flag": "CTF{rot_thirteen_is_fun}",
+            "hints": [
+                {"content": "ROT13 shifts each letter 13 positions forward in the alphabet. A becomes N, B becomes O, and so on.", "point_cost": 10},
+                {"content": "You can decode ROT13 by applying the same transformation again. Or search for a ROT13 decoder online.", "point_cost": 20},
+            ]
+        },
+        {
+            "title": "Hidden in the Page",
+            "description": "Every web page has HTML source code that your browser renders visually. Developers sometimes leave notes or forgotten credentials hidden inside HTML comments that are invisible on screen but visible in the source.\n\nThe flag for this challenge is hidden in an HTML comment below. View this page's source code to find it.\n\n<!-- Developer note: flag is CTF{inspect_the_source} -->\n\nCan you find it?",
+            "category": "web",
+            "difficulty": "easy",
+            "points": 100,
+            "flag": "CTF{inspect_the_source}",
+            "hints": [
+                {"content": "HTML comments start with <!-- and end with -->. They are invisible on the rendered page but visible in the source.", "point_cost": 10},
+                {"content": "Read the challenge description very carefully — the flag might already be right in front of you.", "point_cost": 15},
+            ]
+        },
+        {
+            "title": "Base64 Secrets",
+            "description": "Developers sometimes confuse encoding with encryption. Encoding is not secure — it is just a way to represent data in a different format and can always be reversed without a key.\n\nThe following string has been Base64 encoded. Decode it to find the flag:\n\nQ1RGe2Jhc2U2NF9pc19ub3RfZW5jcnlwdGlvbn0=\n\nSubmit the decoded value as your flag.",
+            "category": "crypto",
+            "difficulty": "medium",
+            "points": 200,
+            "flag": "CTF{base64_is_not_encryption}",
+            "hints": [
+                {"content": "Base64 strings often end with = or == padding characters.", "point_cost": 15},
+                {"content": "You can decode Base64 using the command: echo 'string' | base64 -d or use an online Base64 decoder.", "point_cost": 25},
+            ]
+        },
+    ]
 
-            created_challenges += 1
-            print(f"+ Created challenge: {entry['title']} ({entry['category']})")
-
+    for ch_data in challenges:
+        hints_data = ch_data.pop("hints")
+        challenge = Challenge(**ch_data)
+        db.add(challenge)
         db.commit()
-        print(
-            f"\nDone. Added {created_challenges} new challenge(s) "
-            f"and {created_hints} hint(s)."
-        )
-    finally:
-        db.close()
+        db.refresh(challenge)
 
+        for hint_data in hints_data:
+            hint = Hint(challenge_id=challenge.id, **hint_data)
+            db.add(hint)
+
+    db.commit()
+    db.close()
+    print("Database seeded successfully with 6 challenges.")
 
 if __name__ == "__main__":
-    seed_database()
+    seed()
