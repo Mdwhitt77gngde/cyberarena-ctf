@@ -43,7 +43,7 @@ def startup_event() -> None:
         seed()
     else:
         db.close()
-
+ 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
