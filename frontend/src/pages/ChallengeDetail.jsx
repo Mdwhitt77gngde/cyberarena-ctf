@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { challengeService } from '../services/challengeService'
 import { useAuth } from '../context/AuthContext'
+import CheerpXTerminal from '../components/CheerpXTerminal'
 
 const TERMINAL_CATEGORIES = ['linux']
 
@@ -110,7 +111,7 @@ export default function ChallengeDetail() {
                   ) : (
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-[#4a6080]">
-                        🔒 Hint {i + 1}
+                        Hint {i + 1}
                       </span>
                       <button
                         onClick={() => revealHint(i)}
@@ -174,21 +175,12 @@ export default function ChallengeDetail() {
                   <div className="w-2.5 h-2.5 rounded-full bg-[#f39c12]" />
                   <div className="w-2.5 h-2.5 rounded-full bg-[#2ecc71]" />
                 </div>
-                <span className="text-xs text-[#4a6080] ml-2">
-                  challenge-env — bash
-                </span>
+                <span className="text-xs text-[#4a6080] ml-2">challenge-env — bash</span>
               </div>
-              <span className="text-xs text-[#4a6080]">⚡ WebVM Terminal</span>
+              <span className="text-xs text-[#4a6080]">Linux Terminal</span>
             </div>
-            {/* WebVM iframe */}
-            <div className="flex-1 bg-[#060c14]">
-              <iframe
-                src="https://webvm.io/?pass=1"
-                className="w-full h-full border-0"
-                style={{ minHeight: '500px' }}
-                allow="cross-origin-isolated"
-                title="CyberArena Linux Terminal"
-              />
+            <div className="flex-1">
+              <CheerpXTerminal challengeTitle={challenge?.title} />
             </div>
           </>
         ) : (
@@ -196,7 +188,7 @@ export default function ChallengeDetail() {
             {/* Puzzle Header */}
             <div className="flex items-center justify-between px-4 h-10 bg-[#0d1321] border-b border-[#1e2d47] flex-shrink-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#4a6080]">🧩 Puzzle Challenge</span>
+                <span className="text-xs text-[#4a6080]">Puzzle Challenge</span>
               </div>
               <span className="text-xs text-[#4a6080]">No terminal required</span>
             </div>
@@ -213,7 +205,7 @@ export default function ChallengeDetail() {
 
               <div className="max-w-2xl bg-[#0d1321] border border-[#1e2d47] rounded-xl p-6">
                 <h3 className="text-sm font-medium text-[#e0eaf8] mb-4">
-                  💡 How to solve this challenge
+                  How to solve this challenge
                 </h3>
                 <div className="flex flex-col gap-3 text-xs text-[#8899aa] leading-relaxed">
                   <p>1. Read the challenge description carefully on the left panel.</p>
@@ -225,7 +217,7 @@ export default function ChallengeDetail() {
 
               <div className="max-w-2xl bg-[#0d1321] border border-[#1e2d47] rounded-xl p-6">
                 <h3 className="text-sm font-medium text-[#e0eaf8] mb-4">
-                  🔧 Useful Tools
+                  Useful Tools
                 </h3>
                 <div className="flex flex-col gap-2 text-xs text-[#8899aa]">
                   <p>• <span className="text-[#4a9eff]">CyberChef</span> — gchq.github.io/CyberChef — decode Base64, ROT13, and more</p>
