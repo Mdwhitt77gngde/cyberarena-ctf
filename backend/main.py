@@ -32,8 +32,17 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup_event() -> None:
-    """Create and verify the database schema at startup."""
     init_db()
+    # Auto-seed challenges if database is empty
+    from app.database import SessionLocal
+    from app.models import Challenge
+    db = SessionLocal()
+    if db.query(Challenge).count() == 0:
+        db.close()
+        from scripts.seed import seed
+        seed()
+    else:
+        db.close()
 
 
 @app.exception_handler(Exception)
