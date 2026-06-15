@@ -28,38 +28,38 @@ def seed():
         # --- Linux challenges (require terminal) ---
         {
             "title": "Lost in the Files",
-            "description": "A developer left a secret note somewhere on this server before they quit. Nobody knows where it is. Your job is to find it. Start exploring the file system and see what you can dig up.",
+            "description": "A developer left a secret note somewhere on this server before they quit. Nobody knows where it is. Your job is to find it.\n\nYou are logged in as root. Start by exploring the home directory. Not everything is visible at first glance.",
             "category": "linux",
             "difficulty": "easy",
             "points": 100,
             "flag": "CTF{h1dd3n_f1l3s_4r3_3asy}",
             "hints": [
-                {"content": "Not all files are visible by default in Linux. Some files are intentionally hidden.", "point_cost": 10},
-                {"content": "Try adding flags to your ls command to reveal hidden files.", "point_cost": 20},
+                {"content": "In Linux, files that start with a dot are hidden and do not appear in a regular ls listing.", "point_cost": 10},
+                {"content": "Run ls -la /root to list all files including hidden ones, then use cat to read the file you find.", "point_cost": 20},
             ]
         },
         {
             "title": "Permission Denied",
-            "description": "There is a sensitive file on this server called secret.txt but when you try to read it you get Permission Denied. The original file is locked down tight — but the sysadmin was careless and left a backup copy somewhere. Find the backup and read the flag.",
+            "description": "There is a sensitive file in /root called secret.txt — but when you try to read it you get Permission Denied. The file is locked down tight.\n\nHowever, the sysadmin was careless and left a backup copy somewhere in the same directory. Find the backup and read the flag.",
             "category": "linux",
             "difficulty": "medium",
             "points": 200,
             "flag": "CTF{p3rm1ss10ns_4r3_3v3ryth1ng}",
             "hints": [
-                {"content": "Check file permissions carefully. Use ls -la to see who owns what.", "point_cost": 15},
-                {"content": "Sysadmins often put backup files in /tmp. Have a look around there.", "point_cost": 25},
+                {"content": "Run ls -la /root to inspect the files and their permissions. Look at the permission string on the left — all dashes means no one can read it.", "point_cost": 15},
+                {"content": "Backup files are often hidden. Run ls -la /root and look for files starting with a dot.", "point_cost": 25},
             ]
         },
         {
             "title": "The Hidden Process",
-            "description": "A rogue process is running on this server. The attacker hid a flag inside the process environment variables before disappearing. You need to find the process and extract the flag from its environment.",
+            "description": "A rogue process is running on this server. The attacker embedded a flag inside the process environment variables before disappearing.\n\nYour job is to find the suspicious process and extract the flag from its environment.",
             "category": "linux",
             "difficulty": "hard",
             "points": 300,
             "flag": "CTF{pr0c3ss_3nv_s3cr3ts}",
             "hints": [
-                {"content": "Start by listing all running processes on the system.", "point_cost": 20},
-                {"content": "Every running process has a folder in /proc. Environment variables are stored in a file called environ inside that folder.", "point_cost": 30},
+                {"content": "List all running processes with: ps aux — look for something that should not be there.", "point_cost": 20},
+                {"content": "Each process has a directory in /proc/<PID>/. The file environ inside it holds all environment variables. Run: cat /proc/<PID>/environ | tr '\\0' '\\n'", "point_cost": 30},
             ]
         },
         # --- Non-VM challenges (no terminal needed) ---
